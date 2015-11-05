@@ -40,7 +40,7 @@
 #include "cfassert.h"
 #include "nvicconf.h"
 #include "config.h"
-#include "ledseq.h"
+#include "queuemonitor.h"
 
 
 #define UART_DATA_TIMEOUT_MS 1000
@@ -155,6 +155,7 @@ void uartInit(void)
 
   vSemaphoreCreateBinary(waitUntilSendDone);
   uartDataDelivery = xQueueCreate(40, sizeof(uint8_t));
+  DEBUG_QUEUE_MONITOR_REGISTER(uartDataDelivery);
 
   USART_ITConfig(UART_TYPE, USART_IT_RXNE, ENABLE);
 
@@ -337,11 +338,35 @@ void uartTxenFlowctrlIsr()
   if (GPIO_ReadInputDataBit(UART_TXEN_PORT, UART_TXEN_PIN) == Bit_SET)
   {
     uartPauseDma();
-    //ledSet(LED_GREEN_R, 1);
   }
   else
   {
     uartResumeDma();
-    //ledSet(LED_GREEN_R, 0);
   }
 }
+
+void __attribute__((used)) EXTI4_IRQHandler(void)
+{
+  uartTxenFlowctrlIsr();
+}
+
+void __attribute__((used)) USART2_IRQHandler(void)
+{
+  uartIsr();
+}
+
+void __attribute__((used)) UART4_IRQHandler(void)
+{
+  uartIsr();
+}
+
+void __attribute__((used)) USART6_IRQHandler(void)
+{
+  uartIsr();
+}
+
+void __attribute__((used)) DMA2_Stream7_IRQHandler(void)
+{
+  uartDmaIsr();
+}
+

@@ -54,6 +54,9 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+#include <stdint.h>
+
+#include "config.h"
 #include "cfassert.h"
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -70,12 +73,11 @@
 #define configUSE_PREEMPTION		1
 #define configUSE_IDLE_HOOK			1
 #define configUSE_TICK_HOOK			0
-#define configCPU_CLOCK_HZ			( ( unsigned long ) 168000000 )
+#define configCPU_CLOCK_HZ			( ( unsigned long ) FREERTOS_MCU_CLOCK_HZ )
 #define configTICK_RATE_HZ			( ( portTickType ) 1000 )
-#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 100 )
-#define configTOTAL_HEAP_SIZE		( ( size_t ) ( 20000 ) )
+#define configMINIMAL_STACK_SIZE	( ( unsigned short ) FREERTOS_MIN_STACK_SIZE )
+#define configTOTAL_HEAP_SIZE		( ( size_t ) ( FREERTOS_HEAP_SIZE ) )
 #define configMAX_TASK_NAME_LEN		( 10 )
-#define configUSE_TRACE_FACILITY	0
 #define configUSE_16_BIT_TICKS		0
 #define configIDLE_SHOULD_YIELD		0
 #define configUSE_CO_ROUTINES 		0
@@ -113,8 +115,8 @@ to exclude the API function. */
 #define vPortSVCHandler SVC_Handler
 
 //Milliseconds to OS Ticks
-#define M2T(X) ((unsigned int)(X*(configTICK_RATE_HZ/1000.0)))
-#define F2T(X) ((unsigned int)((configTICK_RATE_HZ/X)))
+#define M2T(X) ((unsigned int)((X)*(configTICK_RATE_HZ/1000.0)))
+#define F2T(X) ((unsigned int)((configTICK_RATE_HZ/(X))))
 
 // DEBUG SECTION
 #define configUSE_APPLICATION_TASK_TAG  1
@@ -125,6 +127,7 @@ to exclude the API function. */
 #define TASK_STABILIZER_ID_NBR  3
 #define TASK_ADC_ID_NBR         4
 #define TASK_PM_ID_NBR          5
+#define TASK_PROXIMITY_ID_NBR   6
 
 #define configASSERT( x )  if( ( x ) == 0 ) assertFail(#x, __FILE__, __LINE__ )
 /*
@@ -134,4 +137,16 @@ to exclude the API function. */
     debugSendTraceInfo((int)pxCurrentTCB->pxTaskTag); \
   }
 */
+// Send 4 first chatacters of task name to ITM port 1
+#define traceTASK_SWITCHED_IN() *((uint32_t*)0xE0000004) = *((uint32_t*)pxCurrentTCB->pcTaskName);
+
+// Queue monitoring
+#ifdef DEBUG_QUEUE_MONITOR
+    #define configUSE_TRACE_FACILITY	1
+    #define traceQUEUE_SEND(xQueue) qm_traceQUEUE_SEND(xQueue)
+    void qm_traceQUEUE_SEND(void* xQueue);
+    #define traceQUEUE_SEND_FAILED(xQueue) qm_traceQUEUE_SEND_FAILED(xQueue)
+    void qm_traceQUEUE_SEND_FAILED(void* xQueue);
+#endif // DEBUG_QUEUE_MONITOR
+
 #endif /* FREERTOS_CONFIG_H */
