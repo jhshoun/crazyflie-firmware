@@ -41,6 +41,7 @@
  * with the highest priority is run.
  */
 
+#include <stdint.h>
 #include <stdbool.h>
 #include <led.h>
 
@@ -59,6 +60,7 @@ typedef struct {
 void ledseqInit(void);
 bool ledseqTest(void);
 
+void ledseqEnable(bool enable);
 void ledseqRun(led_t led, ledseq_t * sequence);
 void ledseqStop(led_t led, ledseq_t * sequence);
 void ledseqSetTimes(ledseq_t *sequence, int32_t onTime, int32_t offTime);

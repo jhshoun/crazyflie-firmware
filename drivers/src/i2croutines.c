@@ -19,9 +19,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f10x_dma.h"
-#include "stm32f10x_rcc.h"
-#include "stm32f10x_gpio.h"
+#include "stm32fxxx.h"
 #include "i2croutines.h"
 
 #include "FreeRTOS.h"
@@ -522,7 +520,7 @@ void I2C_DMAConfig(I2C_TypeDef* I2Cx, uint8_t* pBuffer, uint32_t BufferSize,
  * @param  None
  * @retval : None
  */
-void i2cInterruptHandlerI2c1(void)
+void __attribute__((used)) I2C1_EV_IRQHandler(void)
 {
 
   __IO uint32_t SR1Register = 0;
@@ -641,7 +639,7 @@ void i2cInterruptHandlerI2c1(void)
  * @param  None
  * @retval : None
  */
-void i2cInterruptHandlerI2c2(void)
+void __attribute__((used)) I2C2_EV_IRQHandler(void)
 {
   __IO uint32_t SR1Register = 0;
   __IO uint32_t SR2Register = 0;
@@ -752,6 +750,16 @@ void i2cInterruptHandlerI2c2(void)
       SR2Register = 0;
     }
   }
+}
+
+void __attribute__((used)) I2C1_ER_IRQHandler(void)
+{
+  i2cErrorInterruptHandler(I2C1);
+}
+
+void __attribute__((used)) I2C2_ER_IRQHandler(void)
+{
+  i2cErrorInterruptHandler(I2C2);
 }
 
 /**
